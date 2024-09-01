@@ -9,6 +9,13 @@ permissions:
   packages: write
   contents: read
 
+env:
+  AZURE_RESOURCE_GROUP: github_action
+  AZURE_LOCATION: eastus
+  AZURE_CONTAINER_APP_NAME: my-flask-app
+  AZURE_CONTAINER_APP_ENV_NAME: testing
+
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -37,3 +44,38 @@ jobs:
           context: .
           push: true
           tags: ${{ steps.meta.outputs.tags }}
+          
+      - name: 'Login to Azure'
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          
+      # - name: 'Create Azure Resource Group'
+      #   run: |
+      #     az group create --name ${{ env.AZURE_RESOURCE_GROUP }} --location ${{ env.AZURE_LOCATION }}
+      # - name: 'Create Azure Container App Environment'
+      #   run: |
+      #     az containerapp env create \
+      #       --name ${{ env.AZURE_CONTAINER_APP_ENV_NAME }} \
+      #       --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+      #       --location ${{ env.AZURE_LOCATION }}
+
+      # - name: 'Create and Deploy to Azure Container App'
+      #   run: |
+      #     az containerapp create \
+      #       --name ${{ env.AZURE_CONTAINER_APP_NAME }} \
+      #       --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+      #       --environment ${{ env.AZURE_CONTAINER_APP_ENV_NAME }} \
+      #       --image ${{ steps.meta.outputs.tags }} \
+      #       --target-port 5000 \
+      #       --ingress external \
+      #       --registry-server ghcr.io \
+      #       --registry-username ${{ github.repository_owner }} \
+      #       --registry-password ${{ secrets.GITHUB_TOKEN }}
+
+      # - name: 'Get Container App URL'
+      #   run: |
+      #     echo "Container App URL: $(az containerapp show --name ${{ env.AZURE_CONTAINER_APP_NAME }} --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --query properties.configuration.ingress.fqdn -o tsv)"
+
+
+          
